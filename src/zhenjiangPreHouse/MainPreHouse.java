@@ -16,6 +16,9 @@ public class MainPreHouse {
 	
 	/*每天尝试10次*/
 	private static int times = 10;
+	
+	/*尝试间隔*/
+	private static int delay = 10000;
 
 	public static void main(String[] args) throws DocumentException, InterruptedException {
 		// TODO Auto-generated method stub	
@@ -25,7 +28,7 @@ public class MainPreHouse {
 			status = mainFlow();
 			time++;
 			Thread.currentThread();
-			Thread.sleep(10000);
+			Thread.sleep(delay);
 		} while (status == false && time < times );
 	}
 	
