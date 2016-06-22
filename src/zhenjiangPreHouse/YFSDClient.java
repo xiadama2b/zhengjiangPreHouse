@@ -23,6 +23,9 @@ public class YFSDClient {
 	/*服务端URL*/
 	private String url = "http://198.25.0.47:8080/YFSD_NANJING/getZJJYMX";
 	
+	/*银行名称*/
+	private String bankName = "民生银行";
+	
 	@SuppressWarnings("deprecation")
 	public ArrayList<SendXmlFileRequest> callYFSDOnce(ListAccountResponse listAccountResponse){
 		PostMethod method = new PostMethod(this.url);
@@ -37,6 +40,8 @@ public class YFSDClient {
         
         method.setRequestHeader("User-Agent", "Fiddler");
         
+        method.setRequestHeader("Content-Type", "application/json");
+        
         method.setRequestBody(this.BuildRequestJson(listAccountResponse));
         
         HttpClient httpClient = new HttpClient();
@@ -48,7 +53,7 @@ public class YFSDClient {
 			statusCode = httpClient.executeMethod(method);
 			
 			if (statusCode != HttpStatus.SC_OK) {
-				System.out.println("http status code " + statusCode);
+				new ZJLog().log("考核平台返回错误码:" + statusCode);
 				return null;
 			}
 			
@@ -63,7 +68,7 @@ public class YFSDClient {
 				line = "";
 			}
 			
-			return_list = this.ParseResponseJson(list);
+			return_list = this.ParseResponseJson(list, listAccountResponse.getAcName());
 			
 			method.releaseConnection();
 			
@@ -75,6 +80,7 @@ public class YFSDClient {
 		return return_list;
 	}
 	
+
 	/*
 	 * get last date
 	 * */
@@ -84,7 +90,7 @@ public class YFSDClient {
 		Calendar calendar = Calendar.getInstance();
 		
 		int year = calendar.get(Calendar.YEAR);
-		int month = calendar.get(Calendar.MONTH);
+		int month = calendar.get(Calendar.MONTH) + 1;
 		int date = calendar.get(Calendar.DATE);
 		
 		// 上个月31：1 2 4 6 8 9 11 上个月30天  5 7 10 12 山个月28 29天 3
@@ -113,7 +119,8 @@ public class YFSDClient {
 			year = year - 1;
 		}
 		
-		lastDate = year + "-" + month + "-" + date;
+		
+		lastDate = year + (month < 10?"-0":"-") + month + (date < 10?"-0":"-") + date;
 		return lastDate;
 	}
 	
@@ -138,13 +145,13 @@ public class YFSDClient {
 	 * parase response Json
 	 * */
 
-	private ArrayList<SendXmlFileRequest> ParseResponseJson(ArrayList<String> list){
+	private ArrayList<SendXmlFileRequest> ParseResponseJson(ArrayList<String> list, String acName){
 		ArrayList<SendXmlFileRequest> return_list = new ArrayList<SendXmlFileRequest>();
 		
 		ArrayList<SendXmlFileRequest> tmp_list;
 		
 		for (int i = 0; i < list.size(); i++) {
-			tmp_list = this.ParasOneJson(list.get(i));
+			tmp_list = this.ParasOneJson(list.get(i), acName);
 			for (int j = 0; j < tmp_list.size(); j++) {
 				return_list.add(tmp_list.get(j));
 			}
@@ -155,7 +162,7 @@ public class YFSDClient {
 		return return_list;
 	}
 	
-	private ArrayList<SendXmlFileRequest> ParasOneJson(String line){
+	private ArrayList<SendXmlFileRequest> ParasOneJson(String line, String acName){
 		char head = line.charAt(0);
 		char tail = line.charAt(line.length() - 1);
 		
@@ -172,7 +179,7 @@ public class YFSDClient {
 		
 		String seID = "";
 		String acID = "";
-		String acName = "";
+//		String acName = "";
 		String coRegID = "";
 		String buyerName = "";
 		String baRecordDate = "";
@@ -192,24 +199,26 @@ public class YFSDClient {
 		ArrayList<SendXmlFileRequest> list = new ArrayList<SendXmlFileRequest>();
 		for (int i = 0; i < count; i++) {
 			JSONObject jsonObj = jsonArray.getJSONObject(i);
-			seID = jsonObj.getString("seID");
-			acID = jsonObj.getString("acID");
-			acName = jsonObj.getString("acName");
-			coRegID = jsonObj.getString("coRegID");
-			buyerName = jsonObj.getString("buyerName");
-			baRecordDate = jsonObj.getString("baRecordDate");
-			dealDate = jsonObj.getString("dealDate");
-			dealBa = jsonObj.getString("dealBa");
-			dealAddr = jsonObj.getString("dealAddr");
-			dealMode = jsonObj.getString("dealMode");
-			dealType = jsonObj.getString("dealType");
+			seID = jsonObj.getString("seID").equals("null")?"":jsonObj.getString("seID");
+			acID = jsonObj.getString("acID").equals("null")?"":jsonObj.getString("acID");
+//			acName = jsonObj.getString("acName").equals("null")?"":jsonObj.getString("acName");
+			coRegID = jsonObj.getString("coRegID").equals("null")?"":jsonObj.getString("coRegID");
+			buyerName = jsonObj.getString("buyerName").equals("null")?"":jsonObj.getString("buyerName");
+			baRecordDate = jsonObj.getString("baRecordDate").equals("null")?"":(jsonObj.getString("baRecordDate") + " 00:00:00");
+			dealDate = jsonObj.getString("dealDate").equals("null")?"":(jsonObj.getString("baRecordDate") + " 00:00:00");
+//			dealBa = jsonObj.getString("dealBa").equals("null")?"":jsonObj.getString("dealBa");
+//			dealAddr = jsonObj.getString("dealAddr").equals("null")?"":jsonObj.getString("dealAddr");
+			dealBa = this.bankName;
+			dealAddr = jsonObj.getString("dealAddr").equals("null")?"":jsonObj.getString("dealBa");
+			dealMode = jsonObj.getString("dealMode").equals("null")?"":jsonObj.getString("dealMode");
+			dealType = jsonObj.getString("dealType").equals("null")?"":jsonObj.getString("dealType");
 			outMoney = jsonObj.getDouble("outMoney");
 			inMoney = jsonObj.getDouble("inMoney");
-			leftMoney = jsonObj.getDouble("leftMoney");
-			outacID = jsonObj.getString("outacID");
-			outacName = jsonObj.getString("outacName");
-			outbaName = jsonObj.getString("outbaName");
-			dealNote = jsonObj.getString("dealNote");
+			leftMoney = 0.00;
+			outacID = jsonObj.getString("outacID").equals("null")?"":jsonObj.getString("outacID");
+			outacName = jsonObj.getString("outacName").equals("null")?"":jsonObj.getString("outacName");
+			outbaName = jsonObj.getString("outbaName").equals("null")?"":jsonObj.getString("outbaName");
+			dealNote = jsonObj.getString("dealNote").equals("null")?"":jsonObj.getString("dealNote");
 			
 			SendXmlFileRequest sendXmlFileRequest;
 			sendXmlFileRequest = new SendXmlFileRequest(seID, acID, acName, coRegID, buyerName, baRecordDate, dealDate, dealBa, dealAddr, dealMode, dealType, outMoney, inMoney, leftMoney, outacID, outacName, outbaName, dealNote);

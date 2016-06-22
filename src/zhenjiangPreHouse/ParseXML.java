@@ -1,6 +1,5 @@
 package zhenjiangPreHouse;
 
-import java.awt.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -11,6 +10,8 @@ import org.dom4j.Element;
 
 
 public class ParseXML {
+	private int success_code = 0;
+	
 	public ArrayList<ListAccountResponse> parseListAccountResponse(String listAccountXML) throws DocumentException{		
 		Document doc = DocumentHelper.parseText(listAccountXML);
 		
@@ -18,7 +19,7 @@ public class ParseXML {
 		
 		Iterator<Element> iter = root.elementIterator("RECORD");
 		
-		ArrayList<ListAccountResponse> list = new ArrayList<>();
+		ArrayList<ListAccountResponse> list = new ArrayList<ListAccountResponse>();
 				
 		while (iter.hasNext()) {
 			Element recordEle = (Element) iter.next();
@@ -46,4 +47,22 @@ public class ParseXML {
 		
 		return list;
 	}
+	
+	public int parseSendXmlFileResponse(String sendXmlFileXML) throws DocumentException{		
+		Document doc = DocumentHelper.parseText(sendXmlFileXML);
+		
+		Element root = doc.getRootElement();
+		
+		Iterator<Element> iter = root.elementIterator("ERROR");
+		
+		String errorNumber = "";
+				
+		iter.hasNext();
+		Element recordEle = (Element) iter.next();
+		errorNumber = recordEle.elementTextTrim("ERRORNUMBER");
+		
+		return errorNumber.equals("")?this.success_code:Integer.parseInt(errorNumber);
+	}
+	
+
 }

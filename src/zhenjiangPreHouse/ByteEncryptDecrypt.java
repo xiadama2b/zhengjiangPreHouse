@@ -4,17 +4,20 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 public class ByteEncryptDecrypt {
-	public byte[] encrypt(byte[] content, String skey){
+	private String key = "0123456789123456";
+	
+	public byte[] encrypt(byte[] content){
+		if (content == null || content.length == 0) {
+			return null;
+		}
 		byte[] raw = null;
 		try {
-			raw = skey.getBytes("utf-8");
+			raw = this.key.getBytes("utf-8");
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -42,7 +45,7 @@ public class ByteEncryptDecrypt {
 		byte[] original = null;
 		try {
 			original = cipher.doFinal(content);
-		} catch (IllegalBlockSizeException | BadPaddingException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -50,10 +53,13 @@ public class ByteEncryptDecrypt {
 		return original;
 	}
 	
-	public byte[] decrypt(byte[] content, String skey){
+	public byte[] decrypt(byte[] content){
+		if (content.length == 0 || null == content) {
+			return null;
+		}
 		byte[] raw = null;
 		try {
-			raw = skey.getBytes("utf-8");
+			raw = this.key.getBytes("utf-8");
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -81,7 +87,7 @@ public class ByteEncryptDecrypt {
 		byte[] original = null;
 		try {
 			original = cipher.doFinal(content);
-		} catch (IllegalBlockSizeException | BadPaddingException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

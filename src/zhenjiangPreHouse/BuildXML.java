@@ -28,7 +28,7 @@ public class BuildXML {
 			record.addElement("DEALTYPE").setText(list.get(i).getDealType());
 			record.addElement("OUTMONEY").setText(String.format("%.2f", list.get(i).getOutMoney()));
 			record.addElement("INMONEY").setText(String.format("%.2f", list.get(i).getInMoney()));
-			record.addElement("LEFTMONEY").setText(String.format("%.2f", list.get(i).getLeftmoney()));
+			record.addElement("LEFTMONEY").setText(String.format("%.2f", list.get(i).getLeftMoney()));
 			record.addElement("OUTACID").setText(list.get(i).getOutacID());
 			record.addElement("OUTACNAME").setText(list.get(i).getOutacName());
 			record.addElement("OUTBANAME").setText(list.get(i).getOutbaName());
